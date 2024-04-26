@@ -11,6 +11,7 @@ streamlit-chat = "*"
 pypdf = "*"
 fastembed = "*"
 chromadb = "*"
+sentence-transformers = "*"
 
 [dev-packages]
 
