@@ -5,18 +5,19 @@ name = "pypi"
 
 [packages]
 langchain = "*"
-langchain-community = "*"
+openai = "*"
+pandas = "*"
+tabulate = "*"
+python-dotenv = "*"
+openpyxl = "*"
 streamlit = "*"
-streamlit-chat = "*"
+pandasai = "*"
 pypdf = "*"
-fastembed = "*"
-chromadb = "*"
+tiktoken = "*"
 sentence-transformers = "*"
-torch = "*"
-transformers = "*"
+faiss-cpu = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.11"
-python_full_version = "3.11.3"
