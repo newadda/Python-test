@@ -35,7 +35,7 @@ class ChatPDF:
     def __init__(self):
         
         ##### === Model 셋팅
-        self.model = ChatOllama(model='llama3-ko-8b-q4')
+        self.model = ChatOllama(model='llama3')
         
         ##### === Splitter 셋팅
         #self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=100)
@@ -46,25 +46,29 @@ class ChatPDF:
         
         ##### === Prompt 셋팅
         ### 기본 셋팅
-        system_template = """
+        system_template = r"""
         당신은 질문에 답변하는 한국어 AI봇입니다.
-        """
-        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
-
-        human_template = r"""
-                    <요구사항> 으로 시작하는 태그의 내용은 너가 지켜야 할 사항들이야. 이것을 지켜줘.
+                            <요구사항> 으로 시작하는 태그의 내용은 너가 지켜야 할 사항들이야. 이것을 지켜줘.
+        
                     
                     <요구사항>
-                    당신은 질문에 답변하는 AI봇입니다.
                     <참고>로 구분되는 텍스트를 기반으로 답변을 하세요.
                     답을 만들 수 없다면 모른다고 답해주세요.
                     <질문>으로 구분되는 텍스트가 질문입니다.
                     답변은 질문과 같은 언어를 사용하세요.
                     </요구사항>
                     
+
+                    
                     <참고>
                     {context}
                     </참고>
+                    
+        """
+        system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+
+        human_template = r"""
+
                     
                     
                     <질문> {question} </질문>
@@ -80,6 +84,7 @@ class ChatPDF:
             ]
         )
         
+        '''
         ### 메모리 테스트용 template
         system_template = r"""
         당신은 질문에 답변하는 한국어 AI봇입니다. <학습>으로 시작하고 </학습>으로 끝나는 내용을 기반으로 답하세요.
@@ -91,13 +96,13 @@ class ChatPDF:
                     """
                     
         human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
-
+        '''
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 system_message_prompt,MessagesPlaceholder(variable_name="chat_history"), human_message_prompt
             ]
         )
-        
+       
         # 메모리 셋팅
         self.memory = ConversationSummaryBufferMemory(
             llm=self.model,
@@ -105,7 +110,7 @@ class ChatPDF:
             memory_key="chat_history",
             return_messages=True,
         )
-
+        
         
     def ingest(self, pdf_file_path: str):
         docs = PyPDFLoader(file_path=pdf_file_path).load()
@@ -135,21 +140,21 @@ class ChatPDF:
                       | self.model
                       | StrOutputParser())
         ### 메모리
+        
         handler_2 = StdOutCallbackHandler()
         self.chain = ({"context": self.retriever, "question": RunnablePassthrough()}
                       | RunnablePassthrough.assign(chat_history=self.load_memory)
                       | self.prompt
                       | self.model
-                      
                       | StrOutputParser()
                       )     
         
         ### 미리 교육
-        self.preLearning(chunks)   
+        #self.preLearning(chunks)   
     
      ### 메모리
     def load_memory(self,input):
-        print(input)
+      
         return self.memory.load_memory_variables({})["chat_history"]    
     
     def preLearning(self,chunks):
