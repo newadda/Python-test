@@ -35,43 +35,39 @@ class ChatPDF:
     def __init__(self):
         
         ##### === Model 셋팅
-        self.model = ChatOllama(model='llama3')
+        self.model = ChatOllama(model='l3oko8bpreq8')
         
         ##### === Splitter 셋팅
         #self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=100)
         self.text_splitter = CharacterTextSplitter(separator="\n",
-                                        chunk_size=200,
+                                        chunk_size=600,
                                         chunk_overlap=100,
                                         length_function=len) 
         
         ##### === Prompt 셋팅
         ### 기본 셋팅
-        system_template = r"""
-        당신은 질문에 답변하는 한국어 AI봇입니다.
-                            <요구사항> 으로 시작하는 태그의 내용은 너가 지켜야 할 사항들이야. 이것을 지켜줘.
-        
-                    
-                    <요구사항>
-                    <참고>로 구분되는 텍스트를 기반으로 답변을 하세요.
-                    답을 만들 수 없다면 모른다고 답해주세요.
-                    <질문>으로 구분되는 텍스트가 질문입니다.
-                    답변은 질문과 같은 언어를 사용하세요.
-                    </요구사항>
-                    
-
-                    
-                    <참고>
-                    {context}
-                    </참고>
-                    
+        system_template = """
+        A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. 모든 대답은 한국어(Korean)으로 대답해줘.          
         """
         system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
-        human_template = r"""
-
+        human_template = """
+                    요구사항을 준수해줘.
+        
+                    
+                    요구사항:
+                    참고 내용을 기반으로 질문에 답변을 하세요.
+                    답변은 간결하게 하세요.
+                    답변을 만들 수 없다면 억지로 답변을 만들지 말고 모른다고 답해주세요.
+                    답변은 질문과 같은 언어를 사용하세요.
                     
                     
-                    <질문> {question} </질문>
+                    참고:
+                    {context}
+                    
+                    
+                    질문:
+                    {question}
                    
                     """
                     
@@ -97,6 +93,7 @@ class ChatPDF:
                     
         human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
         '''
+        
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 system_message_prompt,MessagesPlaceholder(variable_name="chat_history"), human_message_prompt
@@ -110,7 +107,7 @@ class ChatPDF:
             memory_key="chat_history",
             return_messages=True,
         )
-        
+          
         
     def ingest(self, pdf_file_path: str):
         docs = PyPDFLoader(file_path=pdf_file_path).load()
@@ -148,7 +145,7 @@ class ChatPDF:
                       | self.model
                       | StrOutputParser()
                       )     
-        
+       
         ### 미리 교육
         #self.preLearning(chunks)   
     
@@ -200,6 +197,7 @@ class ChatPDF:
         return self.model.predict(prompt)
         '''
         result=self.chain.invoke(query)
+        
         self.memory.save_context(
                         {"input": query},
                         {"output": result},

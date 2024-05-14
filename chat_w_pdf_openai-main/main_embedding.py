@@ -50,6 +50,9 @@ class chat_gen():
         #                    )
         llm = ChatOllama(model="llama3")
 
+        
+
+
         # Define your system instruction
         system_instruction = """ As an AI assistant, you must answer the query from the user from the retrieved content,
         if no relavant information is available, answer the question by using your knowledge about the topic"""
